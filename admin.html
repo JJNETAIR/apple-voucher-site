@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+<head><title>Admin Panel</title></head>
+<body>
+<h2>Admin - Add Voucher</h2>
+<form method="post">
+    Code: <input name="code" required><br>
+    Start Date (YYYY-MM-DD): <input name="start_date" required><br>
+    Duration: 
+    <select name="duration">
+        <option value="15">15 days</option>
+        <option value="30">30 days</option>
+    </select><br>
+    <button type="submit">Add/Update</button>
+</form>
+<h3>All Vouchers</h3>
+<ul>
+{% for code, info in vouchers.items() %}
+    <li>{{ code }} - {{ info.type }} days from {{ info.start_date }}</li>
+{% endfor %}
+</ul>
+<a href="/logout">Logout</a>
+</body>
+</html>
