@@ -1,55 +1,53 @@
-
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for
+import json
 from datetime import datetime, timedelta
-import os
 
 app = Flask(__name__)
-app.secret_key = 'supersecret'
 
-VOUCHERS = {
-    'ABC123': {'type': '15', 'start_date': '2024-05-20'},
-    'XYZ789': {'type': '30', 'start_date': '2024-05-10'}
-}
+VOUCHER_FILE = 'data.json'
 
-@app.route('/')
-def home():
-    return render_template('index.html')
+def load_vouchers():
+    try:
+        with open(VOUCHER_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return {}
 
-@app.route('/check', methods=['POST'])
-def check():
-    code = request.form['code'].strip().upper()
-    voucher = VOUCHERS.get(code)
-    if voucher:
-        start_date = datetime.strptime(voucher['start_date'], "%Y-%m-%d")
-        duration = int(voucher['type'])
-        end_date = start_date + timedelta(days=duration)
-        remaining = (end_date - datetime.now()).days
-        if remaining < 0:
-            remaining = 0
-        return render_template('index.html', result=True, code=code, remaining=remaining, end=end_date.strftime("%Y-%m-%d"))
-    return render_template('index.html', error="Voucher not found")
+def save_vouchers(vouchers):
+    with open(VOUCHER_FILE, 'w') as f:
+        json.dump(vouchers, f, indent=4)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    message = None
     if request.method == 'POST':
-        if request.form['username'] == 'admin' and request.form['password'] == 'pass123':
-            session['admin'] = True
-            return redirect(url_for('admin'))
-        return render_template('login.html', error="Invalid credentials")
-    return render_template('login.html')
+        code = request.form.get('voucher').strip()
+        vouchers = load_vouchers()
+        if code in vouchers:
+            start_date = datetime.strptime(vouchers[code]['start'], '%Y-%m-%d')
+            duration = vouchers[code]['days']
+            end_date = start_date + timedelta(days=duration)
+            today = datetime.today()
+            remaining = (end_date - today).days
+            if remaining < 0:
+                message = f'Voucher expired on {end_date.strftime("%Y-%m-%d")}.'
+            else:
+                message = f'{remaining} day(s) remaining (until {end_date.strftime("%Y-%m-%d")})'
+        else:
+            message = 'Voucher not found.'
+    return render_template('index.html', message=message)
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    if not session.get('admin'):
-        return redirect(url_for('login'))
     if request.method == 'POST':
-        code = request.form['code'].strip().upper()
-        start_date = request.form['start_date']
-        duration = request.form['duration']
-        VOUCHERS[code] = {'type': duration, 'start_date': start_date}
-    return render_template('admin.html', vouchers=VOUCHERS)
+        code = request.form['code'].strip()
+        days = int(request.form['days'])
+        start = request.form['start']
+        vouchers = load_vouchers()
+        vouchers[code] = {'start': start, 'days': days}
+        save_vouchers(vouchers)
+        return redirect(url_for('admin'))
+    return render_template('admin.html')
 
-@app.route('/logout')
-def logout():
-    session.pop('admin', None)
-    return redirect(url_for('home'))
+if __name__ == '__main__':
+    app.run(debug=True)
