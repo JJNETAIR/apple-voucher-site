@@ -1,22 +1,25 @@
+
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Apple Admin Panel</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
+<head><title>Admin Panel</title></head>
 <body>
-    <div class="container">
-        <h2>Apple Admin - Add Voucher</h2>
-        <form method="POST">
-            <input type="text" name="code" placeholder="Voucher Code" required>
-            <select name="days">
-                <option value="15">15 Days</option>
-                <option value="30">30 Days</option>
-            </select>
-            <input type="date" name="start" required>
-            <button type="submit">Add Voucher</button>
-        </form>
-        <footer>© 2025 Apple Wi-Fi</footer>
-    </div>
+<h2>Admin - Add Voucher</h2>
+<form method="post">
+    Code: <input name="code" required><br>
+    Start Date (YYYY-MM-DD): <input name="start_date" required><br>
+    Duration: 
+    <select name="duration">
+        <option value="15">15 days</option>
+        <option value="30">30 days</option>
+    </select><br>
+    <button type="submit">Add/Update</button>
+</form>
+<h3>All Vouchers</h3>
+<ul>
+{% for code, info in vouchers.items() %}
+    <li>{{ code }} - {{ info.type }} days from {{ info.start_date }}</li>
+{% endfor %}
+</ul>
+<a href="/logout">Logout</a>
 </body>
 </html>

@@ -1,20 +1,17 @@
+
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Apple Wi-Fi Voucher Checker</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
+<head><title>Apple Wi-Fi Voucher Check</title></head>
 <body>
-    <div class="container">
-        <h2>Apple Wi-Fi Voucher Checker</h2>
-        <form method="POST">
-            <input type="text" name="voucher" placeholder="Enter Voucher Code" required>
-            <button type="submit">Check</button>
-        </form>
-        {% if message %}
-            <p class="message">{{ message }}</p>
-        {% endif %}
-        <footer>© 2025 Apple Wi-Fi</footer>
-    </div>
+<h2>Voucher Validity Check</h2>
+<form method="post" action="/check">
+    <input name="code" placeholder="Enter voucher code" required>
+    <button type="submit">Check</button>
+</form>
+{% if result %}
+<p>Code: {{ code }}<br>Days remaining: {{ remaining }}<br>Ends on: {{ end }}</p>
+{% elif error %}
+<p style="color:red;">{{ error }}</p>
+{% endif %}
 </body>
 </html>
